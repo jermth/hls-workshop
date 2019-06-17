@@ -28,7 +28,7 @@ number_of_reads = params.number_of_reads
 Channel 
     .fromFilePairs( params.reads, flat: true )
     .ifEmpty { error "Cannot find any reads matching: ${params.reads}"  }
-    .into { read_pairs_ch; read_pairs2_ch } 
+    .into { read_pairs_bowtie2_ch; read_pairs_samtools_ch; read_pairs_bcftools_ch } 
 
 process runBowtie2 {
     
@@ -36,7 +36,7 @@ process runBowtie2 {
 
     input:
     file bowtie2_index from bowtie2_index_location
-    set pair_id, file(read1), file(read2) from read_pairs_ch
+    set pair_id, file(read1), file(read2) from read_pairs_bowtie2_ch
      
     output:
     file ("${pair_id}.sam") into bowtie2_sam_output
@@ -50,14 +50,30 @@ process samToBam {
     publishDir params.outdir, mode:'copy'
 
     input:
-    set sample_id, file(read1), file(read2) from read_pairs2_ch
+    set sample_id, file(read1), file(read2) from read_pairs_bcftools_ch
     file ("${sample_id}.sam") from bowtie2_sam_output
     
     output:
     file ("${sample_id}.bam") into samtools_bam_output
 
     """
-    samtools view -bS ${sample_id}.sam > ${sample_id}.bam
+    samtools view -bS ${sample_id}.sam | samtools sort > ${sample_id}.bam
+    """
+
+}
+
+process bamToVCF {
+    publishDir params.outdir, mode:'copy'
+
+    input:
+    set sample_id, file(read1), file(read2) from read_pairs_samtools_ch
+    file ("${sample_id}.bam") from samtools_bam_output
+    
+    output:
+    file ("${sample_id}.vcf") into bcftools_vcf_output
+
+    """
+    bcftools mpileup --no-reference ${sample_id}.bam > ${sample_id}.vcf
     """
 
 }
