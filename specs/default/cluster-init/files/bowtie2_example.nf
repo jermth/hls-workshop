@@ -2,19 +2,25 @@
  * Microsoft Azure Genomics Workshop
  * Introduction to Nextflow
  */
-params.reads = "$baseDir/NA12787/SRR622461_{1,2}.fastq.gz"
-params.bowtie2_index = "$baseDir/bowtie2_index/grch38/grch38_1kgmaj"
-params.number_of_reads = 1000
+
+params.averedatadir = "/avere/data/genomics_workshop_data"
+params.reads = "${params.averedatadir}/NA12787/SRR622461_{1,2}.fastq.gz"
+params.bowtie2_index = "${params.averedatadir}/bowtie2_index/grch38/grch38_1kgmaj"
+params.number_of_reads = 100000
 params.outdir = "results"
+params.prefix = "exercise4"
 
 println ""
 println "=========================================================="
 println " Microsoft Azure Genomics Workshop "
 println "=========================================================="
+println "Avere Data Dir                 : ${params.averedatadir}"
 println "reads                          : ${params.reads}"
 println "Number of reads to process:    : ${params.number_of_reads}"
 println "bowtie2_index                  : ${params.bowtie2_index}"
 println "Resultdir                      : ${params.outdir}"
+println "Results prefix                 : ${params.prefix}"
+
 
 
 /*
@@ -39,10 +45,10 @@ process runBowtie2 {
     set pair_id, file(read1), file(read2) from read_pairs_bowtie2_ch
      
     output:
-    file ("${pair_id}.sam") into bowtie2_sam_output
+    file ("${pair_id}.${params.prefix}.sam") into bowtie2_sam_output
        
     """
-    bowtie2 -t -x ${bowtie2_index_location} -p ${task.cpus} -U ${read1},${read2} -u ${number_of_reads} -S ${pair_id}.sam
+    bowtie2 -t -x ${bowtie2_index_location} -p ${task.cpus} -U ${read1},${read2} -u ${number_of_reads} -S ${pair_id}.${params.prefix}.sam
     """
 }
 
@@ -51,13 +57,13 @@ process samToBam {
 
     input:
     set sample_id, file(read1), file(read2) from read_pairs_bcftools_ch
-    file ("${sample_id}.sam") from bowtie2_sam_output
+    file ("${sample_id}.${params.prefix}.sam") from bowtie2_sam_output
     
     output:
-    file ("${sample_id}.bam") into samtools_bam_output
+    file ("${sample_id}.${params.prefix}.bam") into samtools_bam_output
 
     """
-    samtools view -bS ${sample_id}.sam | samtools sort > ${sample_id}.bam
+    samtools view -bS ${sample_id}.${params.prefix}.sam | samtools sort > ${sample_id}.${params.prefix}.bam
     """
 
 }
@@ -67,13 +73,13 @@ process bamToVCF {
 
     input:
     set sample_id, file(read1), file(read2) from read_pairs_samtools_ch
-    file ("${sample_id}.bam") from samtools_bam_output
+    file ("${sample_id}.${params.prefix}.bam") from samtools_bam_output
     
     output:
-    file ("${sample_id}.vcf") into bcftools_vcf_output
+    file ("${sample_id}.${params.prefix}.vcf") into bcftools_vcf_output
 
     """
-    bcftools mpileup --no-reference ${sample_id}.bam > ${sample_id}.vcf
+    bcftools mpileup --no-reference ${sample_id}.${params.prefix}.bam > ${sample_id}.${params.prefix}.vcf
     """
 
 }
