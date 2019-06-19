@@ -116,19 +116,19 @@
     docker run -u $(id -u ${USER}):$(id -g ${USER})  -v ~/genomics-workshop/docker_results:/results -v /avere/data/genomics_workshop_data:/data biocontainers/samtools:v1.7.0_cv4 /bin/bash -c "samtools view -bS /results/exercise3.sam | samtools sort -o /results/exercise3.bam"
     ```
 
-Exercise 4: Nextflow with conda tools
+## Exercise 4: Nextflow with conda tools
 1. Open and look at the bowtie.local.nf file. This nf file describes a workflow. The processes defined run the same set of commands in exercise2. Now however, the Nextflow workflow manager chains together the outputs.
 
 2. Run the same set of applications locally using nextflow:
 	
         nextflow run bowtie2.local.nf
 
-Exercise 5: Nextflow with docker containers
+## Exercise 5: Nextflow with docker containers
 - Nextflow works with docker conainers as well. Look at the differences between bowtie2.container.nf and bowtie2.local.nf
 
         nextflow run bowtie2.container.nf
 
-Exercise 6: Nextflow with docker, on SGE
+## Exercise 6: Nextflow with docker, on SGE
 - Finally, use Nextflow with the SGE scheduler by specifying the execution engine in the config file. 
 - Using the same NF flow file, the docker tasks are now submitted to the SGE compute nodes. 
 
