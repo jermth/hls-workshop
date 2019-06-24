@@ -33,6 +33,7 @@ Autoscale = $Autoscale
         email = $DockerRegistryEmail
 
         [[[cluster-init cyclecloud/docker:default:1.0.2]]]
+        [[[cluster-init hls-workshop:default]]]
 
     [[node master]]
     MachineType = $MasterMachineType
