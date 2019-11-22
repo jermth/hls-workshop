@@ -40,6 +40,8 @@ Autoscale = $Autoscale
     IsReturnProxy = $ReturnProxy
     AdditionalClusterInitSpecs = $MasterClusterInitSpecs
 
+        [[[cluster-init cyclecloud/gridengine:master]]]
+
         [[[configuration]]]
         run_list=role[sge_master_role]
         docker.images = $MasterDockerImages
@@ -59,6 +61,8 @@ Autoscale = $Autoscale
     Interruptible = $UseLowPrio
     AdditionalClusterInitSpecs = $ExecuteClusterInitSpecs
 
+        [[[cluster-init cyclecloud/gridengine:execute]]]
+	
         [[[configuration]]]
         run_list = role[sge_execute_role]
         docker.images = $ExecuteDockerImages
